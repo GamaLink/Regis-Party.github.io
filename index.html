@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Regina - XV Años Pool Party | Invitación</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Pacifico, Caveat, Montserrat, Share Tech Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Montserrat:wght@400;500;600;700;800&family=Pacifico&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- JS Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/js-confetti@latest/dist/js-confetti.browser.js"></script>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            /* Degradado de morado oscuro a morado claro y blanco solo al final */
+            background: linear-gradient(180deg, #170529 0%, #581c87 75%, #ffffff 100%);
+            background-attachment: fixed;
+            color: #ffffff;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .font-pacifico { font-family: 'Pacifico', cursive; }
+        .font-caveat { font-family: 'Caveat', cursive; }
+        .font-mono-hacker { font-family: 'Share Tech Mono', monospace; }
+        
+        /* Glow Effects */
+        .glow-title { text-shadow: 0 0 25px rgba(255, 255, 255, 0.9), 0 0 50px rgba(168, 85, 247, 0.6); }
+        .glow-button { box-shadow: 0 0 25px rgba(168, 85, 247, 0.6); }
+        .glow-start { box-shadow: 0 0 35px rgba(255, 255, 255, 0.8); }
+        .glow-vip { box-shadow: 0 0 15px rgba(192, 132, 252, 0.3); border-color: rgba(192, 132, 252, 0.5); }
+
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        .blinking-cursor { display: inline-block; animation: blink 0.8s infinite; }
+
+        /* ANIMACIÓN DE OLAS SUAVE */
+        @keyframes waveFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-6px) rotate(-1.5deg); }
+            50% { transform: translateY(-2px) rotate(0.5deg); }
+            75% { transform: translateY(5px) rotate(1.5deg); }
+        }
+        .animate-wave { display: inline-block; animation: waveFloat 5s ease-in-out infinite; will-change: transform; }
+
+        /* INTRO OVERLAY & APERTURA */
+        #intro-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 100; display: flex; align-items: center; justify-content: center;
+            pointer-events: auto;
+        }
+        .door-panel {
+            position: absolute; left: 0; width: 100%; height: 50vh;
+            background-color: #170529; z-index: 1;
+            transition: transform 0.85s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+        .door-top { top: 0; }
+        .door-bottom { bottom: 0; }
+        .open-doors .door-top { transform: translateY(-100%); }
+        .open-doors .door-bottom { transform: translateY(100%); }
+
+        .intro-content { position: relative; z-index: 10; transition: opacity 0.4s ease, transform 0.4s ease; }
+        .fade-out-intro { opacity: 0; transform: scale(0.9); pointer-events: none; }
+
+        /* POP ANIMATIONS */
+        .pop-item {
+            opacity: 0; transform: scale(0.6) translateY(20px);
+            transition: opacity 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+            will-change: opacity, transform;
+        }
+        .pop-item.pop-active { opacity: 1; transform: scale(1) translateY(0); }
+
+        /* PARTICULAS Y PÉTALOS */
+        #emoji-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; overflow: hidden; }
+        .particle-item { position: absolute; user-select: none; will-change: transform, opacity; display: flex; align-items: center; justify-content: center; }
+
+        /* Destellos de fondo */
+        .shape-circle-white { width: 6px; height: 6px; background-color: #ffffff; border-radius: 50%; box-shadow: 0 0 8px rgba(255,255,255,0.8); }
+        .shape-circle-purple { width: 6px; height: 6px; background-color: #d8b4fe; border-radius: 50%; box-shadow: 0 0 8px rgba(216, 180, 254, 0.8); }
+
+        /* DISEÑO DE PÉTALOS MORADOS */
+        .petal {
+            width: 18px;
+            height: 18px;
+            border-radius: 0% 100% 0% 100%;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .petal-light { background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%); }
+        .petal-mid { background: linear-gradient(135deg, #c084fc 0%, #a855f7 100%); }
+        .petal-dark { background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); }
+
+        .content-layer { position: relative; z-index: 10; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start py-8 px-4">
+
+    <!-- Reproductor oculto de música de fondo (Actualizado para iOS) -->
+    <video id="bg-music" src="musica.mp4" loop playsinline webkit-playsinline style="display: none;"></video>
+
+    <!-- CAPA PANTALLA DE INICIO -->
+    <div id="intro-overlay">
+        <div class="door-panel door-top"></div>
+        <div class="door-panel door-bottom"></div>
+
+        <div id="intro-card" class="intro-content flex flex-col items-center text-center space-y-6 px-6 -translate-y-12">
+            <span class="text-xs font-bold tracking-widest text-purple-300 uppercase bg-purple-950 border border-purple-800 px-4 py-1.5 rounded-full">
+                CARGANDO...
+            </span>
+            <h2 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white uppercase glow-title">
+                ¿ESTÁS LISTO?<span class="blinking-cursor">_</span>
+            </h2>
+            <button onclick="startExperience()" 
+                    class="mt-2 bg-white text-purple-950 hover:bg-neutral-200 font-extrabold text-lg px-10 py-4 rounded-full glow-start transition-all duration-300 transform active:scale-95 flex items-center gap-2 select-none">
+                <span>START</span>
+                <span>▶</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Capa de Pétalos y Partículas -->
+    <div id="emoji-container"></div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main id="main-content" class="content-layer w-full max-w-md flex flex-col items-center text-center space-y-7">
+
+        <!-- Header / Badge -->
+        <div class="pop-item inline-flex items-center gap-2 border border-purple-500/40 bg-purple-900/40 backdrop-blur-md rounded-full px-5 py-2 text-xs font-bold tracking-wider text-white uppercase shadow-lg mt-4">
+            <span class="text-purple-300">✦</span>
+            <span>XV AÑOS</span>
+            <span class="text-purple-300">✦</span>
+        </div>
+
+        <!-- Título Principal -->
+        <div class="pop-item my-1">
+            <h1 class="font-pacifico text-6xl md:text-7xl text-white glow-title tracking-wide select-none py-1 animate-wave">
+                Regina Alessandra
+            </h1>
+            <div class="flex items-center justify-center gap-3 mt-1 text-purple-300">
+                <span class="h-[1px] w-10 bg-purple-300/50"></span>
+                <span class="text-xs">✦</span>
+                <span class="h-[1px] w-10 bg-purple-300/50"></span>
+            </div>
+            <p class="mt-4 text-[13px] tracking-widest text-white uppercase font-bold">
+                Te invitamos a celebrar <span class="text-purple-300">MIS XV AÑOS</span>
+            </p>
+            <p class="mt-2 text-sm text-purple-100 font-medium tracking-wide">
+                Sé parte de uno de los momentos más importantes de mi vida 💜
+            </p>
+        </div>
+
+        <!-- Ficha de Información Interactiva (Desplegable) -->
+        <div class="pop-item grid grid-cols-1 gap-3.5 w-full">
+            
+            <!-- Tarjeta Dirección -->
+            <div onclick="toggleAccordion('location-content', 'location-arrow')" 
+                 class="bg-purple-950/40 backdrop-blur-md border border-purple-500/30 hover:border-purple-400/60 rounded-2xl p-4 text-left shadow-xl transition cursor-pointer select-none group">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-purple-200 text-xs font-bold uppercase tracking-wider">
+                        <span>📍</span> LUGAR
+                    </div>
+                    <span id="location-arrow" class="text-xs text-purple-300 group-hover:text-white transition-transform duration-300">▼</span>
+                </div>
+                <p class="text-base font-bold text-white mt-1">Casa de Regina</p>
+                <p class="text-xs text-purple-100 mt-0.5">Te esperamos <span class="text-purple-300 text-[10px] ml-1">(Toca para el mapa)</span></p>
+
+                <!-- MAPA -->
+                <div id="location-content" class="hidden mt-4 pt-3 border-t border-purple-500/30 transition-all duration-300">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-white">🗺️ ¿Cómo llegar?</span>
+                        <a href="https://www.google.com/maps/place/Casa/@17.959733,-92.97266,18z/data=!4m6!3m5!1s0x85edd7db1e7a6dd9:0x5e7f2dc3ee6001b4!8m2!3d17.9652009!4d-92.9778024!16s%2Fg%2F11vhqmcb0t?hl=es-419&entry=ttu&g_ep=EgoyMDI2MDgwOS4wIKXMDSoASAFQAw%3D%3D" 
+                           target="_blank" onclick="event.stopPropagation()"
+                           class="text-[10px] bg-purple-700 hover:bg-purple-600 text-white px-2.5 py-1 rounded-lg transition border border-purple-500">
+                            Abrir en Maps ↗
+                        </a>
+                    </div>
+                    <div class="w-full h-48 rounded-xl overflow-hidden border border-purple-500/30 mt-2">
+                        <iframe 
+                            class="w-full h-full border-0 grayscale opacity-85 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3794.887462081521!2d-92.9778024!3d17.9652009!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85edd7db1e7a6dd9%3A0x5e7f2dc3ee6001b4!2sCasa!5e0!3m2!1ses!2smx!4v1700000000000!5m2!1ses!2smx" 
+                            allowfullscreen="" 
+                            loading="lazy">
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta Regalo -->
+            <div onclick="toggleAccordion('gift-content', 'gift-arrow')" 
+                 class="bg-purple-950/40 backdrop-blur-md border border-purple-500/30 hover:border-purple-400/60 rounded-2xl p-4 text-left shadow-xl transition cursor-pointer select-none group">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-purple-200 text-xs font-bold uppercase tracking-wider">
+                        <span>🎁</span> REGALO
+                    </div>
+                    <span id="gift-arrow" class="text-xs text-purple-300 group-hover:text-white transition-transform duration-300">▼</span>
+                </div>
+                <p class="text-base font-bold text-white mt-1">Lluvia de Sobres</p>
+                <p class="text-xs text-purple-100 mt-0.5">El mejor regalo es tu asistencia... <span class="text-purple-300 text-[10px] ml-1">(Toca para leer)</span></p>
+
+                <!-- MENSAJE REGALO -->
+                <div id="gift-content" class="hidden mt-4 pt-3 border-t border-purple-500/30 space-y-3 transition-all duration-300">
+                    <div>
+                        <p class="text-[13px] text-white mt-0.5 leading-relaxed">
+                            "El mejor regalo es tu asistencia, pero si gustas dar un lindo detalle para Regis, que sea en efectivo 💸💜"
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECCIÓN INTERFAZ ACCESO VIP -->
+        <div class="pop-item w-full bg-purple-900/60 backdrop-blur-md border glow-vip border-purple-400/40 rounded-2xl p-5 shadow-xl text-left relative overflow-hidden font-mono-hacker">
+            <div class="flex items-center justify-between border-b border-purple-400/30 pb-2 mb-3">
+                <div class="flex items-center gap-2 text-purple-200 text-xs font-bold">
+                    <span>🎀</span> SISTEMA_VIP
+                </div>
+                <span class="text-[10px] text-white font-bold uppercase tracking-widest bg-purple-600/60 px-2 py-0.5 rounded">BLOQUEADO</span>
+            </div>
+
+            <p class="text-xs text-white mb-3 tracking-wide font-sans">
+                > Ingresa el código secreto para acceder al pase especial:
+            </p>
+
+            <div class="flex items-center gap-2 mb-2">
+                <input id="hacker-input" type="text" placeholder="CÓDIGO VIP..." 
+                       class="w-full bg-black/40 border border-purple-400/50 rounded-xl px-3.5 py-2.5 text-sm text-white font-bold focus:outline-none focus:border-purple-200 placeholder-purple-300/50 uppercase tracking-wider transition">
+                <button onclick="unlockHackerSecret()" 
+                        class="bg-purple-500 hover:bg-purple-400 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl transition transform active:scale-95 shadow-md border border-purple-400/50">
+                    ENTRAR
+                </button>
+            </div>
+
+            <p id="hacker-error" class="text-[11px] text-pink-300 hidden font-bold mt-1.5 font-sans">> ERROR: Clave incorrecta. Pídesela a Regina.</p>
+
+            <!-- MENSAJE SECRETO -->
+            <div id="hacker-secret-box" class="hidden mt-4 pt-3 border-t border-purple-400/40 text-center font-sans">
+                <div class="text-3xl mb-1">🔓🦩</div>
+                <p class="text-xs font-extrabold text-purple-200 uppercase tracking-widest">¡CÓDIGO CORRECTO!</p>
+                
+                <div class="bg-black/30 border border-purple-400/40 rounded-xl p-3.5 mt-2.5 text-left text-white text-xs space-y-2">
+                    <p class="font-bold">🎉 **¡Felicidades, tienes Acceso Total!**</p>
+                    <p>✨ **Misión Oficial:** Tienes prohibido aburrirte y es obligatorio divertirte.</p>
+                    <p class="text-purple-200 font-semibold">📜 **Pase Activado:** Prepárate para los mejores XV a los que asistirás. ¡No faltes! 🍹💃</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmación de Asistencia -->
+        <div class="pop-item w-full bg-purple-950/40 backdrop-blur-md border border-purple-500/30 rounded-2xl p-5 shadow-xl text-center">
+            <p class="text-xs font-bold tracking-widest text-purple-200 uppercase mb-3">CONFIRMA TU ASISTENCIA</p>
+            <a href="https://wa.me/525624961148?text=Hola!%20Confirmo%20mi%20asistencia%20a%20los%20XV%20de%20Regis" target="_blank" 
+               class="inline-flex items-center gap-3 bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-base px-7 py-3.5 rounded-full glow-button transition-transform hover:scale-105 active:scale-95 border border-purple-400/50 shadow-lg">
+                <span>💬</span>
+                <span>56 2496 1148</span>
+            </a>
+            <p class="text-[11px] text-white mt-2.5">TOCA PARA CONFIRMAR 👆</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="pop-item pt-8 pb-10 flex flex-col items-center gap-1.5 w-full mt-2">
+            <p class="tracking-widest uppercase font-extrabold text-purple-950 text-sm">MIS XV AÑOS REGINA</p>
+            <p class="font-bold text-purple-900 text-xs">💜 Te espero con mucha emoción 💜</p>
+        </footer>
+
+    </main>
+
+    <script>
+        const introOverlay = document.getElementById('intro-overlay');
+        const introCard = document.getElementById('intro-card');
+        const popItems = document.querySelectorAll('.pop-item');
+
+        function startExperience() {
+            // 1. Iniciar la música de fondo
+            const music = document.getElementById('bg-music');
+            if (music) {
+                music.volume = 0.5;
+                music.play().catch(error => console.log("Autoplay bloqueado por el navegador:", error));
+            }
+
+            introCard.classList.add('fade-out-intro');
+
+            setTimeout(() => {
+                introOverlay.classList.add('open-doors');
+            }, 250);
+
+            setTimeout(() => {
+                popItems.forEach((item, index) => {
+                    setTimeout(() => {
+                        item.classList.add('pop-active');
+                    }, index * 120);
+                });
+            }, 550);
+
+            setTimeout(() => {
+                introOverlay.style.display = 'none';
+            }, 1200);
+        }
+
+        function toggleAccordion(contentId, arrowId) {
+            const content = document.getElementById(contentId);
+            const arrow = document.getElementById(arrowId);
+
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // --- LÓGICA DE CONTRASEÑA VIP ---
+        const jsConfetti = new JSConfetti();
+
+        function unlockHackerSecret() {
+            const input = document.getElementById('hacker-input').value.trim().toUpperCase();
+            const errorMsg = document.getElementById('hacker-error');
+            const secretBox = document.getElementById('hacker-secret-box');
+
+            if (input === 'REGINA15') {
+                errorMsg.classList.add('hidden');
+                secretBox.classList.remove('hidden');
+
+                jsConfetti.addConfetti({
+                    confettiColors: ['#a855f7', '#d8b4fe', '#ffffff', '#c084fc', '#f3e8ff'],
+                    confettiNumber: 80,
+                });
+            } else {
+                errorMsg.classList.remove('hidden');
+                secretBox.classList.add('hidden');
+            }
+        }
+    </script>
+
+    <!-- Script de Animación: Pétalos Morados y Destellos -->
+    <script>
+        const container = document.getElementById('emoji-container');
+        
+        // Destellos estáticos o lentos de fondo
+        const shapes = ['shape-circle-white', 'shape-circle-purple'];
+        const sparkles = [];
+        const sparkleCount = 20;
+
+        for (let i = 0; i < sparkleCount; i++) {
+            const el = document.createElement('div');
+            el.className = 'particle-item';
+            const shapeDiv = document.createElement('div');
+            shapeDiv.className = shapes[Math.floor(Math.random() * shapes.length)];
+            el.appendChild(shapeDiv);
+            container.appendChild(el);
+
+            sparkles.push({
+                el: el,
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                speedY: Math.random() * 0.5 + 0.2,
+                opacity: Math.random() * 0.5 + 0.2,
+                swayFreq: Math.random() * 0.02 + 0.005
+            });
+        }
+
+        // Pétalos Morados Cayendo
+        const petalClasses = ['petal-light', 'petal-mid', 'petal-dark'];
+        const fallingPetals = [];
+        const petalCount = 25;
+
+        for (let i = 0; i < petalCount; i++) {
+            const el = document.createElement('div');
+            el.className = 'particle-item';
+            
+            const petal = document.createElement('div');
+            petal.className = 'petal ' + petalClasses[Math.floor(Math.random() * petalClasses.length)];
+            el.appendChild(petal);
+            
+            container.appendChild(el);
+
+            const baseScale = Math.random() * 0.6 + 0.4;
+            fallingPetals.push({
+                el: el,
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight - window.innerHeight, // Empiezan desde arriba
+                speedY: Math.random() * 1.5 + 1.0,
+                baseScale: baseScale,
+                rot: Math.random() * 360,
+                rotSpeed: (Math.random() - 0.5) * 3,
+                swayFreq: Math.random() * 0.015 + 0.008,
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+
+        function animateEnvironment() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            // Animar destellos
+            sparkles.forEach(p => {
+                p.y -= p.speedY; // suben muy despacio
+                p.x += Math.sin(p.y * p.swayFreq) * 0.5;
+                
+                if (p.y < -20) {
+                    p.y = height + 20;
+                    p.x = Math.random() * width;
+                }
+                
+                p.el.style.transform = `translate3d(${p.x}px, ${p.y}px, 0)`;
+                p.el.style.opacity = p.opacity;
+            });
+
+            // Animar pétalos cayendo
+            fallingPetals.forEach(e => {
+                e.y += e.speedY; // Caen hacia abajo
+                e.x += Math.sin(e.y * e.swayFreq + e.phase) * 1.5; // Movimiento de hoja de lado a lado
+                e.rot += e.rotSpeed;
+
+                // Si llegan al fondo, regresan arriba
+                if (e.y > height + 30) {
+                    e.y = -30;
+                    e.x = Math.random() * width;
+                    e.phase = Math.random() * Math.PI * 2;
+                }
+
+                e.el.style.transform = `translate3d(${e.x}px, ${e.y}px, 0) rotate(${e.rot}deg) scale(${e.baseScale})`;
+                e.el.style.opacity = 0.85;
+            });
+
+            requestAnimationFrame(animateEnvironment);
+        }
+        requestAnimationFrame(animateEnvironment);
+    </script>
+</body>
+</html>
